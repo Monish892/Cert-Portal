@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Upload, FileArchive, Play, CheckCircle2, AlertCircle, Clock, Package, Zap, TrendingUp, Shield, Download, X } from 'lucide-react'
 
 export default function Step2() {
+  const BASE_URL = "https://cert-portal-367i.onrender.com"
+
   const [batchId, setBatchId] = useState('')
   const [summary, setSummary] = useState(null)
   const [uploading, setUploading] = useState(false)
@@ -18,7 +20,7 @@ export default function Step2() {
     setUploading(true)
     setUploadProgress(0)
 
-    // Simulate progress
+    // Simulate progress bar animation
     const progressInterval = setInterval(() => {
       setUploadProgress(prev => {
         if (prev >= 90) {
@@ -32,15 +34,17 @@ export default function Step2() {
     try {
       const fd = new FormData()
       fd.append('zipfile', file)
-      const res = await fetch('http://localhost:4000/api/batch/upload-zip', {
+
+      const res = await fetch(`${BASE_URL}/api/batch/upload-zip`, {
         method: 'POST',
         body: fd
       })
+
       const data = await res.json()
-      
+
       clearInterval(progressInterval)
       setUploadProgress(100)
-      
+
       setTimeout(() => {
         setBatchId(data.batchId)
         setSummary(data.summary)
@@ -60,16 +64,18 @@ export default function Step2() {
 
   const start = async () => {
     if (!batchId) return alert('Please upload a file first')
-    
+
     setStarting(true)
     try {
-      await fetch('http://localhost:4000/api/batch/start-issuance', {
+      await fetch(`${BASE_URL}/api/batch/start-issuance`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ batchId })
       })
+
       setShowSuccess(true)
       setTimeout(() => setShowSuccess(false), 5000)
+
     } catch (error) {
       alert('Failed to start: ' + error.message)
     } finally {
@@ -85,6 +91,7 @@ export default function Step2() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+
       {/* Success Toast */}
       {showSuccess && (
         <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-top duration-300">
@@ -104,6 +111,7 @@ export default function Step2() {
       )}
 
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
@@ -114,7 +122,9 @@ export default function Step2() {
               <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
                 Batch Upload Center
               </h1>
-              <p className="text-gray-600 text-sm sm:text-base mt-1">Step 2: Upload and process your certificate batch</p>
+              <p className="text-gray-600 text-sm sm:text-base mt-1">
+                Step 2: Upload and process your certificate batch
+              </p>
             </div>
           </div>
 
@@ -138,8 +148,10 @@ export default function Step2() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
           {/* Main Upload Section */}
           <div className="lg:col-span-2 space-y-6">
+
             {/* Upload Card */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="bg-gray-900 p-6 text-white rounded-t-lg">
@@ -153,6 +165,8 @@ export default function Step2() {
               </div>
 
               <div className="p-6 sm:p-8">
+
+                {/* Upload UI */}
                 {!batchId ? (
                   <div>
                     <label className="block">
@@ -164,6 +178,7 @@ export default function Step2() {
                         className="hidden"
                         id="file-upload"
                       />
+
                       <div
                         className={`border-2 border-dashed rounded-lg p-8 sm:p-12 text-center cursor-pointer transition-all
                           ${uploading 
@@ -210,8 +225,11 @@ export default function Step2() {
                     </label>
                   </div>
                 ) : (
+
+                  /* Upload Complete UI */
                   <div className="space-y-6">
-                    {/* Success Banner */}
+
+                    {/* Success banner */}
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-5">
                       <div className="flex items-start gap-4">
                         <div className="bg-gray-900 rounded-full p-2 flex-shrink-0">
@@ -238,13 +256,18 @@ export default function Step2() {
                     {/* Summary Stats */}
                     {summary && (
                       <div className="space-y-6">
+
+                        {/* Analysis Section */}
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                             <Package className="w-5 h-5 text-gray-700" />
                             Batch Analysis
                           </h3>
-                          
+
+                          {/* Stats */}
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+                            {/* Total */}
                             <div className="bg-gray-50 rounded-lg p-5 border border-gray-200 hover:shadow-md transition-all">
                               <div className="flex items-center gap-2 mb-2">
                                 <div className="bg-gray-200 rounded-lg p-2">
@@ -253,9 +276,9 @@ export default function Step2() {
                                 <span className="text-xs font-semibold text-gray-600 uppercase">Total</span>
                               </div>
                               <div className="text-2xl font-bold text-gray-900">{summary.total}</div>
-                              <p className="text-xs text-gray-500 mt-1">Files</p>
                             </div>
-                            
+
+                            {/* Valid */}
                             <div className="bg-gray-50 rounded-lg p-5 border border-gray-200 hover:shadow-md transition-all">
                               <div className="flex items-center gap-2 mb-2">
                                 <div className="bg-gray-900 rounded-lg p-2">
@@ -264,9 +287,9 @@ export default function Step2() {
                                 <span className="text-xs font-semibold text-gray-600 uppercase">Valid</span>
                               </div>
                               <div className="text-2xl font-bold text-gray-900">{summary.valid}</div>
-                              <p className="text-xs text-gray-600 mt-1">{((summary.valid/summary.total)*100).toFixed(1)}% success</p>
                             </div>
-                            
+
+                            {/* Invalid */}
                             <div className="bg-gray-50 rounded-lg p-5 border border-gray-200 hover:shadow-md transition-all">
                               <div className="flex items-center gap-2 mb-2">
                                 <div className="bg-gray-400 rounded-lg p-2">
@@ -275,9 +298,9 @@ export default function Step2() {
                                 <span className="text-xs font-semibold text-gray-600 uppercase">Invalid</span>
                               </div>
                               <div className="text-2xl font-bold text-gray-900">{summary.invalid}</div>
-                              <p className="text-xs text-gray-600 mt-1">Need review</p>
                             </div>
-                            
+
+                            {/* Time */}
                             <div className="bg-gray-50 rounded-lg p-5 border border-gray-200 hover:shadow-md transition-all">
                               <div className="flex items-center gap-2 mb-2">
                                 <div className="bg-gray-200 rounded-lg p-2">
@@ -286,18 +309,19 @@ export default function Step2() {
                                 <span className="text-xs font-semibold text-gray-600 uppercase">Time</span>
                               </div>
                               <div className="text-2xl font-bold text-gray-900">{summary.estimatedSeconds}</div>
-                              <p className="text-xs text-gray-600 mt-1">Seconds (est.)</p>
                             </div>
+
                           </div>
                         </div>
 
-                        {/* Chunks Visualization */}
+                        {/* Chunks */}
                         {summary.chunks && summary.chunks.length > 0 && (
                           <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
                             <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                               <Zap className="w-5 h-5 text-gray-700" />
                               Processing Chunks ({summary.chunks.length})
                             </h4>
+
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                               {summary.chunks.map((chunk, i) => (
                                 <div
@@ -305,39 +329,40 @@ export default function Step2() {
                                   className="bg-white rounded-lg p-4 border border-gray-200 hover:border-gray-900 transition-all hover:shadow-sm"
                                 >
                                   <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs font-semibold text-gray-600 uppercase">Chunk {i + 1}</span>
+                                    <span className="text-xs font-semibold text-gray-600 uppercase">Chunk {i+1}</span>
                                     <div className="bg-gray-100 text-gray-700 text-xs font-semibold px-2 py-1 rounded">
                                       {chunk.length}
                                     </div>
                                   </div>
+
                                   <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
                                     <div 
                                       className="bg-gray-900 h-full rounded-full"
                                       style={{ width: `${(chunk.length/summary.total)*100}%` }}
                                     ></div>
                                   </div>
+
                                   <p className="text-xs text-gray-500 mt-2">
-                                    {((chunk.length/summary.total)*100).toFixed(1)}% of total
+                                    {((chunk.length / summary.total) * 100).toFixed(1)}% of total
                                   </p>
                                 </div>
                               ))}
                             </div>
                           </div>
                         )}
+
                       </div>
                     )}
 
-                    {/* Action Button */}
+                    {/* Start Processing Button */}
                     <button
                       onClick={start}
                       disabled={starting}
                       className="w-full bg-gray-900 hover:bg-gray-800 
-                        disabled:bg-gray-400
-                        text-white font-semibold px-8 py-4 rounded-lg
-                        transition-all duration-200
-                        disabled:cursor-not-allowed
-                        flex items-center justify-center gap-3 shadow-sm hover:shadow-md
-                        group"
+                        disabled:bg-gray-400 text-white font-semibold 
+                        px-8 py-4 rounded-lg transition-all duration-200 
+                        disabled:cursor-not-allowed flex items-center 
+                        justify-center gap-3 shadow-sm hover:shadow-md"
                     >
                       {starting ? (
                         <>
@@ -352,21 +377,25 @@ export default function Step2() {
                         </>
                       )}
                     </button>
+
                   </div>
                 )}
+
               </div>
             </div>
           </div>
 
-          {/* Sidebar - Info & Tips */}
+          {/* Sidebar Info */}
           <div className="space-y-6">
-            {/* Quick Stats */}
+
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <Shield className="w-5 h-5 text-gray-700" />
                 Quick Info
               </h3>
+
               <div className="space-y-4">
+
                 <div className="flex items-start gap-3">
                   <div className="bg-gray-100 rounded-lg p-2 mt-1">
                     <CheckCircle2 className="w-4 h-4 text-gray-700" />
@@ -376,6 +405,7 @@ export default function Step2() {
                     <p className="text-xs text-gray-600">End-to-end encrypted transfer</p>
                   </div>
                 </div>
+
                 <div className="flex items-start gap-3">
                   <div className="bg-gray-100 rounded-lg p-2 mt-1">
                     <Zap className="w-4 h-4 text-gray-700" />
@@ -385,6 +415,7 @@ export default function Step2() {
                     <p className="text-xs text-gray-600">Parallel batch processing</p>
                   </div>
                 </div>
+
                 <div className="flex items-start gap-3">
                   <div className="bg-gray-100 rounded-lg p-2 mt-1">
                     <Download className="w-4 h-4 text-gray-700" />
@@ -394,10 +425,11 @@ export default function Step2() {
                     <p className="text-xs text-gray-600">All data safely stored</p>
                   </div>
                 </div>
+
               </div>
             </div>
 
-            {/* Tips Card */}
+            {/* Tips */}
             <div className="bg-gray-50 rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="bg-gray-900 rounded-lg p-2">
@@ -405,38 +437,30 @@ export default function Step2() {
                 </div>
                 <h3 className="font-semibold text-gray-900">Pro Tips</h3>
               </div>
+
               <ul className="space-y-3 text-sm text-gray-700">
-                <li className="flex gap-2">
-                  <span className="text-gray-500 font-bold">•</span>
-                  <span>Ensure all files are in the correct format before uploading</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-gray-500 font-bold">•</span>
-                  <span>Large batches are automatically split into optimal chunks</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-gray-500 font-bold">•</span>
-                  <span>You can track progress in real-time after starting</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-gray-500 font-bold">•</span>
-                  <span>Invalid files will be flagged for review</span>
-                </li>
+                <li className="flex gap-2"><span className="text-gray-500 font-bold">•</span>Ensure all files are in the correct format before uploading</li>
+                <li className="flex gap-2"><span className="text-gray-500 font-bold">•</span>Large batches are automatically split into chunks</li>
+                <li className="flex gap-2"><span className="text-gray-500 font-bold">•</span>Track progress in real-time</li>
+                <li className="flex gap-2"><span className="text-gray-500 font-bold">•</span>Invalid files will be flagged</li>
               </ul>
             </div>
 
-            {/* Support Card */}
+            {/* Support */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h3 className="font-semibold text-gray-900 mb-3">Need Help?</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Contact our support team for assistance with batch uploads
+                Reach out to our support team for assistance
               </p>
               <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold px-4 py-2.5 rounded-lg transition-all text-sm">
                 Contact Support
               </button>
             </div>
+
           </div>
+
         </div>
+
       </div>
     </div>
   )

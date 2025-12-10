@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { 
   Download, RefreshCw, Eye, Loader2, Search, Activity, 
   CheckCircle2, XCircle, Clock, AlertCircle, TrendingUp, Package, 
-  Zap, X, BarChart3, FileArchive
+  Zap, X, BarChart3
 } from 'lucide-react'
 
 export default function Dashboard() {
@@ -12,6 +12,8 @@ export default function Dashboard() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [realtimeStatus, setRealtimeStatus] = useState('Connected')
+
+  const BASE_URL = 'https://cert-portal-367i.onrender.com'
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -24,7 +26,7 @@ export default function Dashboard() {
     if (!batchId) return
     setLoading(true)
     try {
-      const res = await fetch(`http://localhost:4000/api/batch/status/${batchId}`)
+      const res = await fetch(`${BASE_URL}/api/batch/status/${batchId}`)
       const data = await res.json()
       setBatch(data)
       showToast('Batch loaded successfully!')
@@ -43,17 +45,17 @@ export default function Dashboard() {
 
   const download = () => {
     if (!batchId) return alert('Enter batch ID')
-    window.location.href = `http://localhost:4000/api/batch/download-issued/${batchId}`
+    window.location.href = `${BASE_URL}/api/batch/download-issued/${batchId}`
     showToast('Download started!')
   }
 
   const view = (url) => {
-    window.open(`http://localhost:4000${url}`, '_blank')
+    window.open(`${BASE_URL}${url}`, '_blank')
   }
 
   const retry = async () => {
     if (!batchId) return
-    await fetch('http://localhost:4000/api/batch/start-issuance', {
+    await fetch(`${BASE_URL}/api/batch/start-issuance`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ batchId })
@@ -200,7 +202,9 @@ export default function Dashboard() {
               <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
                 <Box label="Batch ID" value={batch._id || batch.id} icon={<Package className="w-4 h-4" />} />
                 <Box label="Status" value={batch.status} icon={<Activity className="w-4 h-4" />} status />
-                <Box label="Progress" value={`${issuedCount} / ${batch.validCount || 0}`} icon={<TrendingUp className="w-4 h-4" />} progress={batch.validCount ? (issuedCount / batch.validCount * 100) : 0} />
+                <Box label="Progress" value={`${issuedCount} / ${batch.validCount || 0}`} 
+                  icon={<TrendingUp className="w-4 h-4" />} 
+                  progress={batch.validCount ? (issuedCount / batch.validCount * 100) : 0} />
                 <DownloadSection onClick={download} />
               </div>
             </div>
@@ -217,7 +221,9 @@ export default function Dashboard() {
                     <BarChart3 className="w-5 h-5 text-gray-700" />
                     Certificate Results
                   </h3>
-                  <p className='text-sm text-gray-600 mt-1'>Detailed status for each certificate in the batch</p>
+                  <p className='text-sm text-gray-600 mt-1'>
+                    Detailed status for each certificate in the batch
+                  </p>
                 </div>
                 <div className="hidden sm:flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
                   <span className="text-sm font-semibold text-gray-700">
@@ -268,7 +274,9 @@ export default function Dashboard() {
                       <div className="bg-gray-100 rounded-lg px-2 py-1 flex-shrink-0">
                         <span className="text-xs font-bold text-gray-700">#{i + 1}</span>
                       </div>
-                      <div className='font-semibold text-gray-900 text-sm break-all flex-1'>{r.filename}</div>
+                      <div className='font-semibold text-gray-900 text-sm break-all flex-1'>
+                        {r.filename}
+                      </div>
                     </div>
                     <StatusBadge status={r.status} icon={getStatusIcon(r.status)} />
                   </div>
@@ -281,7 +289,7 @@ export default function Dashboard() {
               ))}
             </div>
 
-            {batch.results && batch.results.length === 0 && (
+            {batch.results?.length === 0 && (
               <div className='px-6 py-16 text-center'>
                 <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
                   <Package className="w-10 h-10 text-gray-400" />
@@ -300,7 +308,9 @@ export default function Dashboard() {
                 <Search className='w-12 h-12 text-gray-400' />
               </div>
               <h3 className='text-2xl font-bold text-gray-900 mb-3'>No Batch Loaded</h3>
-              <p className='text-gray-600 mb-6 max-w-md mx-auto'>Enter a batch ID in the search box above to view detailed status, monitor progress, and manage certificates</p>
+              <p className='text-gray-600 mb-6 max-w-md mx-auto'>
+                Enter a batch ID in the search box above to view detailed status, monitor progress, and manage certificates
+              </p>
               <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
                 <Zap className="w-4 h-4" />
                 <span>Real-time updates enabled</span>
